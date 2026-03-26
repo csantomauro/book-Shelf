@@ -1,4 +1,5 @@
 package com.rtfs.BookShelf;
+
 import java.util.Arrays;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,64 +17,61 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import com.rtfs.BookShelf.service.UserDetailsServiceImpl;
+
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final UserDetailsServiceImpl userDetailsService;
-    private final AuthenticationFilter authenticationFilter;
-    private final AuthEntryPoint exceptionHandler;
+	private final UserDetailsServiceImpl userDetailsService;
+	private final AuthenticationFilter authenticationFilter;
+	private final AuthEntryPoint exceptionHandler;
 
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService, AuthenticationFilter authenticationFilter,
-            AuthEntryPoint exceptionHandler) {
-        this.userDetailsService = userDetailsService;
-        this.authenticationFilter = authenticationFilter;
-        this.exceptionHandler = exceptionHandler;
-    }
+	public SecurityConfig(UserDetailsServiceImpl userDetailsService, AuthenticationFilter authenticationFilter,
+			AuthEntryPoint exceptionHandler) {
+		this.userDetailsService = userDetailsService;
+		this.authenticationFilter = authenticationFilter;
+		this.exceptionHandler = exceptionHandler;
+	}
 
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
-    }
+	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
+	}
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf((csrf) -> csrf.disable()).cors(withDefaults())
-                .sessionManagement(
-                        (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(exceptionHandler));
-        return http.build();
-    }
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf((csrf) -> csrf.disable()).cors(withDefaults())
+				.sessionManagement(
+						(sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
+						.requestMatchers(HttpMethod.POST, "/login").permitAll().anyRequest().authenticated())
+				.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
+				.exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(exceptionHandler));
+		return http.build();
+	}
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
-    @Bean
-    public AuthenticationManager uthenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
+	@Bean
+	public AuthenticationManager uthenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+	}
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList(
-            "https://bookshelf-frontend-ten.vercel.app",
-            "http://localhost:5173"
-        ));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("*"));
-        config.setExposedHeaders(Arrays.asList("Authorization"));
-        config.setAllowCredentials(false);
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(Arrays.asList("*"));
+		config.setAllowedMethods(Arrays.asList("*"));
+		config.setAllowedHeaders(Arrays.asList("*"));
+		config.setAllowCredentials(false);
+		config.applyPermitDefaultValues();
+		source.registerCorsConfiguration("/**", config);
+		return source;
+	}
 }
