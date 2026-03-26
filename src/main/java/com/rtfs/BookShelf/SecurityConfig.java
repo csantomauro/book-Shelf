@@ -42,14 +42,20 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf((csrf) -> csrf.disable()).cors(withDefaults())
-				.sessionManagement(
-						(sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-						.requestMatchers(HttpMethod.POST, "/login").permitAll().anyRequest().authenticated())
-				.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-				.exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(exceptionHandler));
-		return http.build();
+	    http
+	        .csrf((csrf) -> csrf.disable())
+	        .cors(withDefaults())
+	        .sessionManagement(
+	            (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	        .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
+	            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+	            .requestMatchers(HttpMethod.POST, "/login").permitAll()
+	            .anyRequest().authenticated())
+	        .addFilterBefore(new org.springframework.web.filter.CorsFilter(corsConfigurationSource()),
+	            UsernamePasswordAuthenticationFilter.class)
+	        .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
+	        .exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(exceptionHandler));
+	    return http.build();
 	}
 
 	@Bean
@@ -64,14 +70,20 @@ public class SecurityConfig {
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(Arrays.asList("*"));
-		config.setAllowedMethods(Arrays.asList("*"));
-		config.setAllowedHeaders(Arrays.asList("*"));
-		config.setAllowCredentials(false);
-		config.applyPermitDefaultValues();
-		source.registerCorsConfiguration("/**", config);
-		return source;
+	    CorsConfiguration config = new CorsConfiguration();
+
+	    config.setAllowedOrigins(Arrays.asList(
+	        "http://localhost:5173",
+	        "https://bookshelf-frontend-ten.vercel.app"
+	    ));
+
+	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+	    config.setAllowedHeaders(Arrays.asList("*"));
+	    config.setAllowCredentials(true);
+
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", config);
+
+	    return source;
 	}
 }
