@@ -1,5 +1,6 @@
 package com.rtfs.BookShelf.web;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,5 +17,9 @@ public class BookController {
 	@GetMapping("/books")
 	public Iterable<Book> getBooks() {
 		return repository.findAll();
+	}
+	@GetMapping("/health")
+	public ResponseEntity<String> health() {
+	    return ResponseEntity.ok("ok");
 	}
 }

@@ -50,6 +50,7 @@ public class SecurityConfig {
 	        .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
 	            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 	            .requestMatchers(HttpMethod.POST, "/login").permitAll()
+	            .requestMatchers(HttpMethod.GET, "/health").permitAll()
 	            .anyRequest().authenticated())
 	        .addFilterBefore(new org.springframework.web.filter.CorsFilter(corsConfigurationSource()),
 	            UsernamePasswordAuthenticationFilter.class)
